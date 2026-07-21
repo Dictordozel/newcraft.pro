@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="./js/alpine.js" defer></script>
+    <script src="./js/tailwind.js" defer></script>
+
+    <title>NewCraft</title>
+
+    <style>
+        @keyframes ken-left {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.15) translateX(-3%);
+            }
+        }
+
+        @keyframes ken-right {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.15) translateX(3%);
+            }
+        }
+
+        @keyframes ken-up {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.15) translateY(-3%);
+            }
+        }
+
+        @keyframes ken-down {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.15) translateY(3%);
+            }
+        }
+
+        .ken-left {
+            animation: ken-left 8s ease-out forwards;
+        }
+
+        .ken-right {
+            animation: ken-right 8s ease-out forwards;
+        }
+
+        .ken-up {
+            animation: ken-up 8s ease-out forwards;
+        }
+
+        .ken-down {
+            animation: ken-down 8s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="m-0 bg-neutral-900">
+
+    <section x-data="{
+        current: 0,
+        outgoing: null,
+        outTimer: null,
+        timer: null,
+        touchStart: 0,
+
+        slides: [
+            {
+                image: './images/kant02.png',
+                effect: 'ken-left',
+                position: '20% 50%'
+            },
+            {
+                image: './images/girl.png',
+                effect: 'ken-right',
+                position: '50% 50%'
+            },
+            {
+                image: './images/richi_04.png',
+                effect: 'ken-up',
+                position: '50% 0%'
+            },
+            {
+                image: './images/richi_02.png',
+                effect: 'ken-up',
+                position: '60% 0%'
+            },
+        ],
+
+        goto(index) {
+            clearTimeout(this.outTimer)
+            this.outgoing = this.current
+            this.current = index
+            this.outTimer = setTimeout(() => { this.outgoing = null }, 1100)
+        },
+
+        next() {
+            this.goto((this.current + 1) % this.slides.length)
+        },
+
+        prev() {
+            this.goto((this.current - 1 + this.slides.length) % this.slides.length)
+        },
+
+        start() {
+            this.timer = setInterval(() => {
+                this.next()
+            }, 8000)
+        },
+
+        stop() {
+            clearInterval(this.timer)
+        },
+
+        restart() {
+            clearInterval(this.timer)
+
+            this.timer = setInterval(() => {
+                this.next()
+            }, 8000)
+        }
+    }" x-init="restart()" @touchstart="
+        touchStart =
+        $event.touches[0].clientX
+    " @touchend="
+        let diff =
+        $event.changedTouches[0].clientX
+        - touchStart
+
+        if(diff > 50) prev()
+        if(diff < -50) next()
+    " class="relative h-screen w-full overflow-hidden">
+
+        <!-- Слайды -->
+
+        <template x-for="(slide,index) in slides" :key="slide.image">
+            <div class="
+                absolute
+                inset-0
+                overflow-hidden
+                transition-opacity
+                duration-1000
+            " :class="
+                current === index
+                ? 'opacity-100'
+                : 'opacity-0'
+            ">
+                <img :src="slide.image" class="
+                    absolute
+                    inset-0
+                    w-full
+                    h-full
+                    object-cover
+                " :class="(current === index || outgoing === index) ? slide.effect : ''"
+                    :style="`object-position:${slide.position}`" />
+            </div>
+        </template>
+
+        <!-- Виньетка -->
+
+        <div class="absolute inset-0" style="
+            background:
+            radial-gradient(
+                ellipse at center,
+                transparent 20%,
+                rgba(0,0,0,.45) 100%
+            );
+        "></div>
+
+        <!-- Контент -->
+
+        <h1 class="
+            select-none
+            z-20
+            absolute
+
+            md:bottom-20
+            bottom-40
+
+            left-4
+            sm:left-10
+            md:left-20
+
+            flex
+            flex-col
+
+            gap-4
+            md:gap-8
+
+            font-extrabold
+            text-neutral-100
+
+            text-[4.5rem]
+            sm:text-[8rem]
+            md:text-[9rem]
+            lg:text-[12rem]
+        ">
+            <a href="https://t.me/dictordozel" target="_blank" class="
+            relative
+            z-30
+                self-start
+                text-4xl
+                leading-[0.8]
+
+                underline
+                underline-offset-10
+
+                hover:opacity-70
+                transition
+            ">
+                НАПИСАТЬ
+            </a>
+
+            <span class="leading-[0.8]">
+                НОВОЕ
+            </span>
+
+            <span class="leading-[0.8]">
+                РЕМЕСЛО
+            </span>
+        </h1>
+
+        <!-- Стрелка влево -->
+
+        <!--    <button-->
+        <!--            @click="prev(); restart();"-->
+
+        <!--            class="-->
+        <!--            z-30-->
+        <!--            absolute-->
+
+        <!--            left-6-->
+        <!--            top-1/2-->
+
+        <!--            -translate-y-1/2-->
+
+        <!--            text-5xl-->
+        <!--            text-white/60-->
+
+        <!--            hover:text-white-->
+
+        <!--            transition-->
+        <!--        "-->
+        <!--    >-->
+        <!--        ←-->
+        <!--    </button>-->
+
+        <!-- Стрелка вправо -->
+
+        <!--    <button-->
+        <!--            @click="next(); restart();"-->
+
+        <!--            class="-->
+        <!--            z-30-->
+        <!--            absolute-->
+
+        <!--            right-6-->
+        <!--            top-1/2-->
+
+        <!--            -translate-y-1/2-->
+
+        <!--            text-5xl-->
+        <!--            text-white/60-->
+
+        <!--            hover:text-white-->
+
+        <!--            transition-->
+        <!--        "-->
+        <!--    >-->
+        <!--        →-->
+        <!--    </button>-->
+
+        <!-- Индикаторы -->
+
+        <div class="
+            z-30
+            absolute
+
+            bottom-8
+            left-1/2
+
+            -translate-x-1/2
+
+            flex
+            gap-3
+        ">
+            <template x-for="(_,index) in slides">
+                <button @click="goto(index); restart();" class="
+                    w-3
+                    h-3
+                    rounded-full
+                    transition
+                " :class="
+                    current === index
+                    ? 'bg-white'
+                    : 'bg-white/30'
+                "></button>
+            </template>
+        </div>
+
+    </section>
+    <!-- <section class="h-screen w-full overflow-hidden bg-neutral-950"></section> -->
+
+</body>
+
+</html>
