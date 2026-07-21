@@ -10,16 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Sanitize inputs
+        id: vars
+        run: |
+          echo "host=$(printf '%s' "${{ secrets.DEPLOY_HOST }}" | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+          echo "user=$(printf '%s' "${{ secrets.DEPLOY_USER }}" | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ steps.vars.outputs.host }}" >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync
         run: |
           rsync -avzr --delete \
             --exclude=".git" --exclude=".github" --exclude=".gitignore" \
             -e "ssh -i ~/.ssh/deploy_key" \
-            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/var/www/newcraft.pro/"
+            ./ "${{ steps.vars.outputs.user }}@${{ steps.vars.outputs.host }}:/var/www/newcraft.pro/"
